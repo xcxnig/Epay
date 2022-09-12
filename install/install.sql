@@ -5,7 +5,7 @@ create table `pre_config` (
 PRIMARY KEY  (`k`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `pre_config` VALUES ('version', '2020');
+INSERT INTO `pre_config` VALUES ('version', '2024');
 INSERT INTO `pre_config` VALUES ('admin_user', 'admin');
 INSERT INTO `pre_config` VALUES ('admin_pwd', '123456');
 INSERT INTO `pre_config` VALUES ('admin_paypwd', '123456');
@@ -251,6 +251,7 @@ CREATE TABLE `pre_user` (
   `apply` tinyint(1) NOT NULL DEFAULT '0',
   `mode` tinyint(4) NOT NULL DEFAULT '0',
   `status` tinyint(4) NOT NULL DEFAULT '0',
+  `refund` tinyint(1) NOT NULL DEFAULT '0',
   `channelinfo` text DEFAULT NULL,
   `ordername` varchar(255) DEFAULT NULL,
  PRIMARY KEY (`uid`),

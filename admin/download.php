@@ -3,8 +3,7 @@ include("../includes/common.php");
 
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 
-$type = isset($_GET['type'])?trim($_GET['type']):null;
-$batch=$_GET['batch'];
+$act=isset($_GET['act'])?daddslashes($_GET['act']):null;
 
 function display_type($type){
 	if($type==1)
@@ -19,7 +18,27 @@ function display_type($type){
 		return 1;
 }
 
-$remark = mb_convert_encoding($conf['transfer_desc'], "GB2312", "UTF-8");
+function display_status($status){
+	if($status==1){
+		return '已支付';
+	}elseif($status==2){
+		return '已退款';
+	}elseif($status==3){
+		return '已冻结';
+	}else{
+		return '未支付';
+	}
+}
+
+function text_encoding($text){
+	return mb_convert_encoding($text, "GB2312", "UTF-8");
+}
+
+switch($act){
+case 'settle':
+$type = isset($_GET['type'])?trim($_GET['type']):null;
+$batch=$_GET['batch'];
+$remark = text_encoding($conf['transfer_desc']);
 
 if($type == 'alipay'){
 	$data='';
@@ -28,7 +47,7 @@ if($type == 'alipay'){
 	while($row = $rs->fetch())
 	{
 		$i++;
-		$data.=$i.','.$row['account'].','.mb_convert_encoding($row['username'], "GB2312", "UTF-8").','.$row['realmoney'].','.$remark."\r\n";
+		$data.=$i.','.$row['account'].','.text_encoding($row['username']).','.$row['realmoney'].','.$remark."\r\n";
 	}
 	
 	$date=date("Ymd");
@@ -42,7 +61,7 @@ if($type == 'alipay'){
 	while($row = $rs->fetch())
 	{
 		$i++;
-		$data.=$i.','.display_type($row['type']).','.$row['account'].','.mb_convert_encoding($row['username'], "GB2312", "UTF-8").','.$row['realmoney'].','.$remark."\r\n";
+		$data.=$i.','.display_type($row['type']).','.$row['account'].','.text_encoding($row['username']).','.$row['realmoney'].','.$remark."\r\n";
 	}
 	
 	$date=date("Ymd");
@@ -57,4 +76,131 @@ header("Content-Type:application/force-download");
 header("Content-Length: {$file_size}");
 header("Content-Disposition:attachment; filename={$file_name}");
 echo $file;
-?>
+break;
+
+case 'ustat':
+$day = trim($_GET['day']);
+$method = trim($_GET['method']);
+if(!$day)exit("<script language='javascript'>alert('param error');history.go(-1);</script>");
+$starttime = date("Y-m-d H:i:s", strtotime($day));
+$endtime = date("Y-m-d H:i:s", strtotime($day) + 3600 * 24);
+$data = [];
+$columns = ['uid'=>'商户ID', 'total'=>'总计'];
+
+if($method == 'type'){
+	$paytype = [];
+	$rs = $DB->getAll("SELECT id,name,showname FROM pre_type WHERE status=1");
+	foreach($rs as $row){
+		$paytype[$row['id']] = text_encoding($row['showname']);
+		$columns['type_'.$row['id']] = text_encoding($row['showname']);
+	}
+	unset($rs);
+}else{
+	$channel = [];
+	$rs = $DB->getAll("SELECT id,name FROM pre_channel WHERE status=1");
+	foreach($rs as $row){
+		$channel[$row['id']] = text_encoding($row['name']);
+	}
+	unset($rs);
+}
+
+$rs=$DB->query("SELECT uid,type,channel,money from pre_order where status=1 and date='$day'");
+while($row = $rs->fetch())
+{
+	$money = (float)$row['money'];
+	if(!array_key_exists($row['uid'], $data)) $data[$row['uid']] = ['uid'=>$row['uid'], 'total'=>0];
+	$data[$row['uid']]['total'] += $money;
+	if($method == 'type'){
+		$ukey = 'type_'.$row['type'];
+		if(!array_key_exists($ukey, $data[$row['uid']])) $data[$row['uid']][$ukey] = $money;
+		else $data[$row['uid']][$ukey] += $money;
+	}else{
+		$ukey = 'channel_'.$row['channel'];
+		if(!array_key_exists($ukey, $data[$row['uid']])) $data[$row['uid']][$ukey] = $money;
+		else $data[$row['uid']][$ukey] += $money;
+		if(!in_array($ukey, $columns)) $columns[$ukey] = $channel[$row['channel']];
+	}
+}
+ksort($data);
+
+
+$file='';
+foreach($columns as $column){
+	$file.=$column.',';
+}
+$file=substr($file,0,-1)."\r\n";
+foreach($data as $row){
+	foreach($columns as $key=>$column){
+		if(!array_key_exists($key, $row))
+			$file.='0,';
+		else
+			$file.=$row[$key].',';
+	}
+	$file=substr($file,0,-1)."\r\n";
+}
+
+$file_name='pay_'.$method.'_'.$day.'.csv';
+$file_size=strlen($file);
+header("Content-Description: File Transfer");
+header("Content-Type:application/force-download");
+header("Content-Length: {$file_size}");
+header("Content-Disposition:attachment; filename={$file_name}");
+echo $file;
+break;
+
+case 'order':
+$starttime = trim($_GET['starttime']);
+$endtime = trim($_GET['endtime']);
+$uid = intval($_GET['uid']);
+$type = intval($_GET['type']);
+$channel = intval($_GET['channel']);
+$dstatus = intval($_GET['dstatus']);
+
+$paytype = [];
+$rs = $DB->getAll("SELECT * FROM pre_type");
+foreach($rs as $row){
+	$paytype[$row['id']] = text_encoding($row['showname']);
+}
+unset($rs);
+
+$sql=" 1=1";
+if(!empty($uid)) {
+	$sql.=" AND A.`uid`='$uid'";
+}
+if(!empty($type)) {
+	$sql.=" AND A.`type`='$type'";
+}elseif(!empty($channel)) {
+	$sql.=" AND A.`channel`='$channel'";
+}
+if($dstatus>-1) {
+	$sql.=" AND A.status={$dstatus}";
+}
+if(!empty($starttime)){
+	$starttime = date("Y-m-d H:i:s", strtotime($starttime.' 00:00:00'));
+	$sql.=" AND A.addtime>='{$starttime}'";
+}
+if(!empty($endtime)){
+	$endtime = date("Y-m-d H:i:s", strtotime("+1 days", strtotime($endtime.' 00:00:00')));
+	$sql.=" AND A.addtime<'{$endtime}'";
+}
+
+$file="系统订单号,商户订单号,接口订单号,商户号,网站域名,商品名称,订单金额,实际支付,商户分成,支付方式,支付通道ID,支付插件,支付账号,支付IP,创建时间,完成时间,支付状态\r\n";
+
+$rs = $DB->query("SELECT A.*,B.plugin FROM pre_order A LEFT JOIN pre_channel B ON A.channel=B.id WHERE{$sql} order by trade_no desc limit 100000");
+while($row = $rs->fetch()){
+	$file.='="'.$row['trade_no'].'",="'.$row['out_trade_no'].'",="'.$row['api_trade_no'].'",'.$row['uid'].','.$row['domain'].','.text_encoding($row['name']).','.$row['money'].','.$row['realmoney'].','.$row['getmoney'].','.$paytype[$row['type']].','.$row['channel'].','.$row['plugin'].','.$row['buyer'].','.$row['ip'].','.$row['addtime'].','.$row['endtime'].','.display_status($row['status'])."\r\n";
+}
+
+$file_name='order_'.$starttime.'_'.$endtime.'.csv';
+$file_size=strlen($file);
+header("Content-Description: File Transfer");
+header("Content-Type:application/force-download");
+header("Content-Length: {$file_size}");
+header("Content-Disposition:attachment; filename={$file_name}");
+echo $file;
+break;
+
+default:
+	exit('No Act');
+break;
+}

@@ -2,13 +2,13 @@
 $is_defend = true;
 include("./inc.php");
 if(isset($_GET['merchant'])){
-	$merchant=isset($_GET['merchant'])?trim($_GET['merchant']):showerror('参数不完整');
+	$merchant=trim($_GET['merchant']);
 	$uid = authcode($merchant, 'DECODE', SYS_KEY);
 	if(!$uid || !is_numeric($uid))showerror('参数错误');
 }elseif(isset($_SESSION['paypage_uid'])){
 	$uid = intval($_SESSION['paypage_uid']);
 }else{
-	showerror('参数错误');
+	showerror('参数不完整');
 }
 $userrow = $DB->getRow("SELECT `uid`,`gid`,`money`,`mode`,`pay`,`cert`,`status`,`channelinfo`,`qq`,`codename` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
 if(!$userrow || $userrow['status']==0 || $userrow['pay']==0)showerror('当前商户不存在或已被封禁');
@@ -25,7 +25,17 @@ $direct = '0';
 $checktype = check_paytype();
 $type = isset($_GET['type'])?trim($_GET['type']):$checktype;
 if($type){
-	$submitData = \lib\Channel::submit($type, $userrow['gid']);
+    if((isset($_GET['code']) || isset($_GET['auth_code'])) && $_SESSION['paypage_channel']){
+        $submitData = \lib\Channel::info($_SESSION['paypage_channel']);
+    }else{
+        $submitData = \lib\Channel::submit($type, $userrow['gid']);
+    }
+    $_SESSION['paypage_typeid'] = $submitData['typeid'];
+	$_SESSION['paypage_channel'] = $submitData['channel'];
+	$_SESSION['paypage_rate'] = $submitData['rate'];
+	$_SESSION['paypage_paymax'] = $submitData['paymax'];
+	$_SESSION['paypage_paymin'] = $submitData['paymin'];
+
 	$apptype = explode(',',$submitData['apptype']);
 	if($checktype == 'alipay' && $type == 'alipay' && ($submitData['plugin']=='alipay' || $submitData['plugin']=='alipaysl') && in_array('4',$apptype)){
 		$openId = alipayOpenId($submitData['channel']);
@@ -36,11 +46,6 @@ if($type){
 	}elseif($checktype == 'qqpay' && $type == 'qqpay'&& $submitData['plugin']=='qqpay' && in_array('2',$apptype)){
 		$direct = '1';
 	}
-	$_SESSION['paypage_typeid'] = $submitData['typeid'];
-	$_SESSION['paypage_channel'] = $submitData['channel'];
-	$_SESSION['paypage_rate'] = $submitData['rate'];
-	$_SESSION['paypage_paymax'] = $submitData['paymax'];
-	$_SESSION['paypage_paymin'] = $submitData['paymin'];
 }
 
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];

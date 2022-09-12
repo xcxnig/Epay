@@ -3,6 +3,7 @@
  * 支付宝实名证件信息比对验证服务类
  */
 require_once PAY_ROOT.'inc/AlipayService.php';
+require_once PAY_ROOT.'inc/model/request/AlipaySystemOauthTokenRequest.php';
 require_once PAY_ROOT.'inc/model/request/AlipayUserCertdocCertverifyPreconsultRequest.php';
 require_once PAY_ROOT.'inc/model/request/AlipayUserCertdocCertverifyConsultRequest.php';
 
@@ -83,7 +84,7 @@ class AlipayCertdocService extends AlipayService {
 		}
 
 		$response = $this->aopclientRequestExecute($request);
-		$response = $response->alipay_system_oauth_token_response;
+		$response = $response->alipay_system_oauth_token_response ?? $response->error_response;
 		
 		if(!empty($response) && $response->user_id){
 			$result = array('user_id'=>$response->user_id, 'access_token'=>$response->access_token);

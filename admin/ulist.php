@@ -98,7 +98,7 @@ $(document).ready(function(){
 				title: '商户号/用户组',
 				formatter: function(value, row, index) {
 					let groupname = row.groupname;
-					if(groupname.length > 14) groupname = groupname.substring(0,14);
+					if(groupname!=null && groupname.length > 14) groupname = groupname.substring(0,14);
 					return '<b>'+value+'</b>[<a href="javascript:showKey('+value+',\''+row.key+'\')">查看密钥</a>]<br/><span onclick="editGroup('+value+','+row.gid+')" style="color:blue">'+groupname+'</span>';
 				}
 			},

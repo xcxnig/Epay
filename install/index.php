@@ -75,7 +75,7 @@ if($step==3){
             if($e->getCode() == 2002){
                 $errorMsg='连接数据库失败：数据库地址填写错误！';
             }elseif($e->getCode() == 1045){
-                $errorMsg='连接数据库失败：数据库地址填写错误！';
+                $errorMsg='连接数据库失败：数据库用户名或密码填写错误！';
             }elseif($e->getCode() == 1049){
                 $errorMsg='连接数据库失败：数据库名不存在！';
             }else{
@@ -145,14 +145,14 @@ if($step==3){
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
     <meta content="yes" name="apple-mobile-web-app-capable">
     <meta content="black" name="apple-mobile-web-app-status-bar-style">
-    <title>彩虹易支付 - 安装程序</title>
+    <title>易支付 - 安装程序</title>
     <link href="//lib.baomitu.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container"><br>
     <div class="row">
         <div class="col-xs-12 col-sm-10 col-md-8 center-block" style="float: none;">
-            <pre><h4>彩虹易支付 - 安装程序</h4></pre>
+            <pre><h4>易支付 - 安装程序</h4></pre>
             <div class="panel panel-warning">
                 <?php
                 if($step==2){
@@ -220,7 +220,7 @@ if(!empty($errorMsg)){
     echo '<div class="alert alert-success text-center" role="alert">数据库配置文件保存成功！</div>';
     if($DB->query("select * from ".$dbconfig['dbqz']."_config")){
 ?>
-                <div class="list-group-item list-group-item-info text-center">系统检测到你已安装过彩虹易支付</div>
+                <div class="list-group-item list-group-item-info text-center">系统检测到你已安装过易支付</div>
 				<div class="list-group-item">
 					<a href="?step=4&jump=1" class="btn btn-block btn-info">跳过安装数据表</a>
 				</div>
@@ -298,7 +298,7 @@ if(!empty($errorMsg)){
                 <?php } ?>
             </div>
             <footer class="footer">
-            <pre><center>Powered by <a href="#">彩虹</a> !</center></pre>
+            <pre><center>Powered by <a href="//8xym.cc">八仙源码</a> !</center></pre>
             </footer>
         </div>  
     </div>

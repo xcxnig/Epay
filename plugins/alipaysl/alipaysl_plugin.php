@@ -36,7 +36,7 @@ class alipaysl_plugin
 			'3' => '当面付扫码',
 			'4' => 'JS支付',
 		],
-		'note' => '在支付宝服务商后台进件后可获取到子商户的授权链接，子商户访问之后即可得到商户授权token', //支付密钥填写说明
+		'note' => '<p>在支付宝服务商后台进件后可获取到子商户的授权链接，子商户访问之后即可得到商户授权token。</p><p>如果使用公钥证书模式，需将<font color="red">应用公钥证书、支付宝公钥证书、支付宝根证书</font>3个crt文件放置于<font color="red">/plugins/alipay/cert/</font>文件夹（或<font color="red">/plugins/alipay/cert/应用APPID/</font>文件夹）</p>', //支付密钥填写说明
 		'bindwxmp' => false, //是否支持绑定微信公众号
 		'bindwxa' => false, //是否支持绑定微信小程序
 	];
@@ -77,6 +77,9 @@ class alipaysl_plugin
 			$html = $aop->wapPay($payRequestBuilder);
 			return ['type'=>'html','data'=>$html];
 		}else{
+			if($conf['alipay_paymode'] == 1){
+				return ['type'=>'jump','url'=>'/pay/qrcodepc/'.TRADE_NO.'/'];
+			}
 			require(PAY_ROOT."inc/model/builder/AlipayTradePagePayContentBuilder.php");
 			require(PAY_ROOT."inc/AlipayTradeService.php");
 		
@@ -109,6 +112,36 @@ class alipaysl_plugin
 			return ['type'=>'jump','url'=>$siteurl.'pay/submit/'.TRADE_NO.'/'];
 		}
 		}
+	}
+
+	//电脑网站支付扫码
+	static public function qrcodepc(){
+		global $siteurl;
+
+		$code_url = '/pay/submitpc/'.TRADE_NO.'/';
+		return ['type'=>'qrcode','page'=>'alipay_qrcodepc','url'=>$code_url];
+	}
+
+	//电脑网站支付扫码跳转
+	static public function submitpc(){
+		global $siteurl, $channel, $order, $ordername, $conf;
+
+		require(PAY_ROOT."inc/model/builder/AlipayTradePagePayContentBuilder.php");
+		require(PAY_ROOT."inc/AlipayTradeService.php");
+	
+		//构造参数
+		$payRequestBuilder = new AlipayTradePagePayContentBuilder();
+		$payRequestBuilder->setSubject($ordername);
+		$payRequestBuilder->setTotalAmount($order['realmoney']);
+		$payRequestBuilder->setOutTradeNo(TRADE_NO);
+		$payRequestBuilder->setQrPayMode('4');
+		$payRequestBuilder->setQrcodeWidth('230');
+	
+		$aop = new AlipayTradeService($config);
+		$html = $aop->pagePay($payRequestBuilder);
+
+		$html = '<!DOCTYPE html><html><body><style>body{margin:0;padding:0}.waiting{position:absolute;width:100%;height:100%;background:#fff url(/assets/img/load.gif) no-repeat fixed center/80px;}</style><div class="waiting"></div>'.$html.'</body></html>';
+		return ['type'=>'html','data'=>$html];
 	}
 
 	//扫码支付

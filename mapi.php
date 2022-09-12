@@ -4,7 +4,8 @@ if(isset($_GET['pid'])){
 }elseif(isset($_POST['pid'])){
 	$queryArr=$_POST;
 }else{
-	exit('{"code":-4}');
+	@header('Content-Type: application/json; charset=UTF-8');
+	exit('{"code":-4, "msg":"商户ID不能为空"}');
 }
 $nosession = true;
 require './includes/common.php';
@@ -142,7 +143,7 @@ if($submitData['mode']==1 && $realmoney-$getmoney>$userrow['money']){
 
 if($firstGetChannel){
 	// 随机增减金额
-	if($conf['pay_payaddstart']!=0&&$conf['pay_payaddmin']!=0&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = $realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+	if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = $realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
 
 	$DB->exec("UPDATE pre_order SET type='{$submitData['typeid']}',channel='{$submitData['channel']}',realmoney='$realmoney',getmoney='$getmoney' WHERE trade_no='$trade_no'");
 }

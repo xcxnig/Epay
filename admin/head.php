@@ -42,7 +42,7 @@ if($admin_cdnpublic==1){
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="./">彩虹易支付管理中心</a>
+        <a class="navbar-brand" href="./">易支付管理中心</a>
       </div><!-- /.navbar-header -->
       <div id="navbar" class="collapse navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
@@ -55,13 +55,14 @@ if($admin_cdnpublic==1){
 		  <li class="<?php echo checkIfActive('settle,slist')?>">
             <a href="./slist.php"><i class="fa fa-cloud"></i> 结算管理</a>
           </li>
-		  <li class="<?php echo checkIfActive('ulist,glist,group,record,uset,domain')?>">
+		  <li class="<?php echo checkIfActive('ulist,glist,group,record,uset,domain,ustat')?>">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> 商户管理<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="./ulist.php">用户列表</a></li>
 			  <li><a href="./glist.php">用户组设置</a></li>
 			  <li><a href="./group.php">用户组购买</a></li>
 			  <li><a href="./record.php">资金明细</a></li>
+        <li><a href="./ustat.php">支付统计</a></li>
         <?php if($conf['pay_domain_forbid']==1 || $conf['pay_domain_open']==1){?><li><a href="./domain.php">授权域名</a></li><?php }?>
             </ul>
           </li>
@@ -90,9 +91,10 @@ if($admin_cdnpublic==1){
 			  <li><a href="./set.php?mod=cron">计划任务配置</a><li>
             </ul>
           </li>
-		  <li class="<?php echo checkIfActive('clean,log,transfer,risk,alipayrisk')?>">
+		  <li class="<?php echo checkIfActive('clean,log,transfer,risk,alipayrisk,export')?>">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cube"></i> 其他功能<b class="caret"></b></a>
             <ul class="dropdown-menu">
+        <li><a href="./export.php">导出订单</a><li>
 			  <li><a href="./transfer.php">企业付款</a><li>
 			  <li><a href="./risk.php">风控记录</a><li>
 			  <li><a href="./log.php">登录日志</a><li>

@@ -34,15 +34,13 @@ case 'orderList':
 		$dstatus = intval($_POST['dstatus']);
 		$sql.=" AND A.status={$dstatus}";
 	}
-	if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
-		if(!empty($_POST['starttime'])){
-			$starttime = daddslashes($_POST['starttime']);
-			$sql.=" AND A.addtime>='{$starttime} 00:00:00'";
-		}
-		if(!empty($_POST['endtime'])){
-			$endtime = daddslashes($_POST['endtime']);
-			$sql.=" AND A.addtime<='{$endtime} 23:59:59'";
-		}
+	if(!empty($_POST['starttime'])){
+		$starttime = date("Y-m-d H:i:s", strtotime($_POST['starttime'].' 00:00:00'));
+		$sql.=" AND A.addtime>='{$starttime}'";
+	}
+	if(!empty($_POST['endtime'])){
+		$endtime = date("Y-m-d H:i:s", strtotime("+1 days", strtotime($_POST['endtime'].' 00:00:00')));
+		$sql.=" AND A.addtime<'{$endtime}'";
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
 		if($_POST['column']=='name'){
@@ -181,7 +179,7 @@ case 'apirefund': //API退款操作
 	if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit('{"code":-1,"msg":"金额输入错误"}');
 	if($paypwd!=$conf['admin_paypwd'])
 		exit('{"code":-1,"msg":"支付密码输入错误！"}');
-	$row=$DB->getRow("select uid,money,getmoney,status from pre_order where trade_no='$trade_no' limit 1");
+	$row=$DB->getRow("select uid,money,getmoney,status,channel from pre_order where trade_no='$trade_no' limit 1");
 	if(!$row)
 		exit('{"code":-1,"msg":"当前订单不存在！"}');
 	if($row['status']!=1)
@@ -196,12 +194,13 @@ case 'apirefund': //API退款操作
 	}
 	$message = null;
 	if(\lib\Plugin::refund($trade_no, $refundmoney, $message)){
-		if($reducemoney>0){
+		$mode = $DB->getColumn("select mode from pre_channel where id='{$row['channel']}'");
+		if($reducemoney>0 && $mode=='0'){
 			if(changeUserMoney($row['uid'], $reducemoney, false, '订单退款', $trade_no)){
 				$addstr = '，并成功从UID:'.$row['uid'].'扣除'.$reducemoney.'元余额';
 			}
-			$DB->exec("update pre_order set status='2' where trade_no='$trade_no'");
 		}
+		$DB->exec("update pre_order set status='2' where trade_no='$trade_no'");
 		exit('{"code":0,"msg":"API退款成功！退款金额￥'.$refundmoney.$addstr.'"}');
 	}else{
 		exit('{"code":-1,"msg":"API退款失败：'.$message.'"}');

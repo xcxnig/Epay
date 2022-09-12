@@ -36,7 +36,7 @@ class wxpayn_plugin
 			'3' => 'H5支付',
 			'4' => '小程序支付',
 		],
-		'note' => '请将商户API私钥“apiclient_key.pem”放到 /plugins/wxpayn/cert/ 文件夹内（或 /plugins/wxpayn/cert/商户号/ 文件夹内）。<br/>上方APPID填写公众号或小程序的皆可，需要在微信服务商后台关联对应的公众号或小程序才能使用。无认证的公众号或小程序无法发起支付！', //支付密钥填写说明
+		'note' => '<p>请将商户API私钥“apiclient_key.pem”放到 /plugins/wxpayn/cert/ 文件夹内（或 /plugins/wxpayn/cert/商户号/ 文件夹内）。</p><p>上方APPID填写公众号或小程序的皆可，需要在微信服务商后台关联对应的公众号或小程序才能使用。无认证的公众号或小程序无法发起支付！</p>', //支付密钥填写说明
 		'bindwxmp' => true, //是否支持绑定微信公众号
 		'bindwxa' => true, //是否支持绑定微信小程序
 	];

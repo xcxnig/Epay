@@ -54,6 +54,57 @@ case 'recordList':
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 
+case 'userPayStat':
+	$day = trim($_POST['day']);
+	$method = trim($_POST['method']);
+	if(!$day)exit(json_encode(['code'=>0, 'msg'=>'no day']));
+	$starttime = date("Y-m-d H:i:s", strtotime($day));
+	$endtime = date("Y-m-d H:i:s", strtotime($day) + 3600 * 24);
+	$data = [];
+	$columns = ['uid'=>'商户ID', 'total'=>'总计'];
+
+	if($method == 'type'){
+		$paytype = [];
+		$rs = $DB->getAll("SELECT id,name,showname FROM pre_type WHERE status=1");
+		foreach($rs as $row){
+			$paytype[$row['id']] = $row['showname'];
+			$columns['type_'.$row['id']] = $row['showname'];
+		}
+		unset($rs);
+	}else{
+		$channel = [];
+		$rs = $DB->getAll("SELECT id,name FROM pre_channel WHERE status=1");
+		foreach($rs as $row){
+			$channel[$row['id']] = $row['name'];
+		}
+		unset($rs);
+	}
+
+	$rs=$DB->query("SELECT uid,type,channel,money from pre_order where status=1 and date='$day'");
+	while($row = $rs->fetch())
+	{
+		$money = (float)$row['money'];
+		if(!array_key_exists($row['uid'], $data)) $data[$row['uid']] = ['uid'=>$row['uid'], 'total'=>0];
+		$data[$row['uid']]['total'] += $money;
+		if($method == 'type'){
+			$ukey = 'type_'.$row['type'];
+			if(!array_key_exists($ukey, $data[$row['uid']])) $data[$row['uid']][$ukey] = $money;
+			else $data[$row['uid']][$ukey] += $money;
+		}else{
+			$ukey = 'channel_'.$row['channel'];
+			if(!array_key_exists($ukey, $data[$row['uid']])) $data[$row['uid']][$ukey] = $money;
+			else $data[$row['uid']][$ukey] += $money;
+			if(!in_array($ukey, $columns)) $columns[$ukey] = $channel[$row['channel']];
+		}
+	}
+	ksort($data);
+	$list = [];
+	foreach($data as $row){
+		$list[] = $row;
+	}
+	exit(json_encode(['code'=>0, 'columns'=>$columns, 'data'=>$list]));
+break;
+
 case 'logList':
 	$sql=" 1=1";
 	if(isset($_POST['value']) && $_POST['value']!=='') {

@@ -1,6 +1,6 @@
 <?php
 include("../includes/common.php");
-$title='彩虹易支付管理中心';
+$title='易支付管理中心';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 ?>
@@ -8,6 +8,7 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
 ?>
 <div class="container" style="padding-top:70px;">
 <div class="col-xs-12 col-lg-9 center-block" style="float: none;">
+<div id="browser-notice"></div>
 <div class="row">
     <div class="col-xs-12 col-lg-8">
       <div class="panel panel-info">
@@ -122,4 +123,14 @@ function getData(getnew){
 		}
 	});
 }
+</script>
+<script>
+function speedModeNotice(){
+	var ua = window.navigator.userAgent;
+	if(ua.indexOf('Windows NT')>-1 && ua.indexOf('Trident/')>-1){
+		var html = "<div class=\"panel panel-default\"><div class=\"panel-body\">当前浏览器是兼容模式，为确保后台功能正常使用，请切换到<b style='color:#51b72f'>极速模式</b>！<br>操作方法：点击浏览器地址栏右侧的IE符号<b style='color:#51b72f;'><i class='fa fa-internet-explorer fa-fw'></i></b>→选择“<b style='color:#51b72f;'><i class='fa fa-flash fa-fw'></i></b><b style='color:#51b72f;'>极速模式</b>”</div></div>";
+		$("#browser-notice").html(html)
+	}
+}
+speedModeNotice();
 </script>

@@ -73,6 +73,7 @@ class PayClient
         $stringToBeSigned = "";
         $i = 0;
         foreach ($params as $k => $v) {
+            if($v==='')continue;
             if ("@" != substr($v, 0, 1)) {
 
                 if ($i == 0) {
@@ -322,6 +323,7 @@ class PayClient
         $signData = null;
 
         $respObject = json_decode($resp);
+
         if (null !== $respObject) {
             $signData = $this->parserJSONSignData($method, $resp, $respObject);
         }else{
@@ -493,8 +495,9 @@ class PayClient
         $signDataEndIndex = $signIndex - 1;
         $indexLen = $signDataEndIndex - $signDataStartIndex;
         if ($indexLen < 0) {
-
-            return null;
+            $signIndex = strrpos($responseContent, "}");
+            $signDataEndIndex = $signIndex;
+            $indexLen = $signDataEndIndex - $signDataStartIndex;
         }
 
         return substr($responseContent, $signDataStartIndex, $indexLen);

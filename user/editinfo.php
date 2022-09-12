@@ -136,7 +136,7 @@ if(strlen($userrow['phone'])==11){
 	<li style="width: 25%;" align="center">
 		<a href="userinfo.php?mod=account">修改密码</a>
 	</li>
-	<?php if($conf['cert_channel']){?>
+	<?php if($conf['cert_open']>0){?>
 	<li style="width: 25%;" align="center">
 		<a href="certificate.php">实名认证</a>
 	</li>
@@ -237,6 +237,13 @@ if(strlen($userrow['phone'])==11){
 						<select class="form-control" name="keylogin" default="<?php echo $userrow['keylogin']?>"><option value="0">关闭</option><option value="1">开启</option></select>
 					</div>
 				</div>
+				<?php if($conf['user_refund']==1){?>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">订单退款API接口</label>
+					<div class="col-sm-9">
+						<select class="form-control" name="refund" default="<?php echo $userrow['refund']?>"><option value="0">关闭</option><option value="1">开启</option></select>
+					</div>
+				</div><?php }?>
 				
 				<div class="form-group">
 				  <div class="col-sm-offset-2 col-sm-4"><input type="button" id="editInfo" value="确定修改" class="btn btn-primary form-control"/><br/>
@@ -454,6 +461,7 @@ $(document).ready(function(){
 		var qq=$("input[name='qq']").val();
 		var url=$("input[name='url']").val();
 		var keylogin=$("select[name='keylogin']").val();
+		var refund=$("select[name='refund']").val();
 		if(email=='' || qq=='' || url==''){layer.alert('请确保各项不能为空！');return false;}
 		if(email.length>0){
 			var reg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
@@ -476,7 +484,7 @@ $(document).ready(function(){
 		$.ajax({
 			type : "POST",
 			url : "ajax2.php?act=edit_info",
-			data : {email:email,qq:qq,url:url,keylogin:keylogin},
+			data : {email:email,qq:qq,url:url,keylogin:keylogin,refund:refund},
 			dataType : 'json',
 			success : function(data) {
 				layer.close(ii);

@@ -63,25 +63,33 @@ echo '<form action="./uset.php?my=add_submit" method="POST">
 </select>
 </div>
 <div class="form-group">
-<label>结算账号:</label><br>
+<label>*结算账号:</label><br>
 <input type="text" class="form-control" name="account" value="" required>
 </div>
 <div class="form-group">
-<label>结算账号姓名:</label><br>
+<label>*结算账号姓名:</label><br>
 <input type="text" class="form-control" name="username" value="" required>
 </div>
 <h4><font color="blue">功能开关</font></h4>
 <div class="form-group">
 <label>手续费扣除模式:</label><br><select class="form-control" name="mode"><option value="0">余额扣费</option><option value="1">订单加费</option></select>
 </div>
-<div class="form-group">
-<label>支付权限:</label><br><select class="form-control" name="pay"><option value="1">1_开启</option><option value="0">0_关闭</option><option value="2">2_未审核</option></select>
-</div>
-<div class="form-group">
-<label>结算权限:</label><br><select class="form-control" name="settle"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
-</div>
-<div class="form-group">
-<label>商户状态:</label><br><select class="form-control" name="status"><option value="1">1_正常</option><option value="0">0_封禁</option></select>
+<div class="row">
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>商户状态:</label><br><select class="form-control" name="status"><option value="1">1_正常</option><option value="0">0_封禁</option><option value="2">2_未审核</option></select>
+		</div>
+	</div>
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>支付权限:</label><br><select class="form-control" name="pay"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
+		</div>
+	</div>
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>结算权限:</label><br><select class="form-control" name="settle"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
+		</div>
+	</div>
 </div>
 <input type="submit" class="btn btn-primary btn-block"
 value="确定添加"></form>';
@@ -180,14 +188,22 @@ echo '<form action="./uset.php?my=edit_submit&uid='.$uid.'" method="POST">
 <div class="form-group">
 <label>手续费扣除模式:</label><br><select class="form-control" name="mode" default="'.$row['mode'].'"><option value="0">余额扣费</option><option value="1">订单加费</option></select>
 </div>
-<div class="form-group">
-<label>支付权限:</label><br><select class="form-control" name="pay" default="'.$row['pay'].'"><option value="1">1_开启</option><option value="0">0_关闭</option><option value="2">2_未审核</option></select>
-</div>
-<div class="form-group">
-<label>结算权限:</label><br><select class="form-control" name="settle" default="'.$row['settle'].'"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
-</div>
-<div class="form-group">
-<label>商户状态:</label><br><select class="form-control" name="status" default="'.$row['status'].'"><option value="1">1_正常</option><option value="0">0_封禁</option></select>
+<div class="row">
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>商户状态:</label><br><select class="form-control" name="status" default="'.$row['status'].'"><option value="1">1_正常</option><option value="0">0_封禁</option><option value="2">2_未审核</option></select>
+		</div>
+	</div>
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>支付权限:</label><br><select class="form-control" name="pay" default="'.$row['pay'].'"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
+		</div>
+	</div>
+	<div class="col-md-4 col-sm-12">
+		<div class="form-group">
+		<label>结算权限:</label><br><select class="form-control" name="settle" default="'.$row['settle'].'"><option value="1">1_开启</option><option value="0">0_关闭</option></select>
+		</div>
+	</div>
 </div>
 <h4><font color="blue">密码修改</font></h4>
 <div class="form-group">
@@ -235,77 +251,85 @@ echo '</div></div>';
 elseif($my=='add_submit')
 {
 if(!checkRefererHost())exit();
-$gid=intval($_POST['gid']);
-$settle_id=intval($_POST['settle_id']);
-$account=trim($_POST['account']);
-$username=trim($_POST['username']);
-$money='0.00';
-$url=trim($_POST['url']);
-$email=trim($_POST['email']);
-$qq=trim($_POST['qq']);
-$phone=trim($_POST['phone']);
-$mode=intval($_POST['mode']);
-$pay=intval($_POST['pay']);
-$settle=intval($_POST['settle']);
-$status=intval($_POST['status']);
-if($account==NULL or $username==NULL){
-showmsg('保存错误,请确保加*项都不为空!',3);
-} else {
 $key = random(32);
-$sql="INSERT INTO `pre_user` (`gid`, `key`, `account`, `username`, `money`, `url`, `addtime`, `settle_id`, `phone`, `email`, `qq`, `cert`, `mode`, `pay`, `settle`, `status`) VALUES (:gid, :key, :account, :username, :money, :url, NOW(), :settle_id, :phone, :email, :qq, 0, :mode, :pay, :settle, :status)";
-$data=[':gid'=>$gid, ':key'=>$key, ':account'=>$account, ':username'=>$username, ':settle_id'=>$settle_id, ':money'=>$money, ':url'=>$url, ':email'=>$email, ':qq'=>$qq, ':phone'=>$phone, ':mode'=>$mode, ':pay'=>$pay, ':settle'=>$settle, ':status'=>$status];
-$sds=$DB->exec($sql, $data);
-if($sds){
-	$uid=$DB->lastInsertId();
+$data = [
+	'gid' => intval($_POST['gid']),
+	'key' => $key,
+	'settle_id' => intval($_POST['settle_id']),
+	'account' => trim($_POST['account']),
+	'username' => trim($_POST['username']),
+	'money' => '0.00',
+	'url' => trim($_POST['url']),
+	'email' => trim($_POST['email']),
+	'qq' => trim($_POST['qq']),
+	'phone' => trim($_POST['phone']),
+	'mode' => intval($_POST['mode']),
+	'cert' => 0,
+	'pay' => intval($_POST['pay']),
+	'settle' => intval($_POST['settle']),
+	'status' => intval($_POST['status']),
+	'addtime' => 'NOW()',
+];
+
+if(empty($data['account']) || empty($data['username'])) showmsg('必填项不能为空！',3);
+
+if(!empty($data['phone'])){
+	if($DB->find('user','*',['phone'=>$data['phone']])) showmsg('手机号已存在！',3);
+}
+if(!empty($data['email'])){
+	if($DB->find('user','*',['email'=>$data['email']])) showmsg('邮箱已存在！',3);
+}
+
+$uid = $DB->insert('user', $data);
+if($uid!==false){
 	if(!empty($_POST['pwd'])){
 		$pwd = getMd5Pwd(trim($_POST['pwd']), $uid);
-		$DB->exec("update `pre_user` set `pwd` ='{$pwd}' where `uid`='$uid'");
+		$DB->update('user', ['pwd'=>$pwd], ['uid'=>$uid]);
 	}
 	showmsg('添加商户成功！商户ID：'.$uid.'<br/>密钥：'.$key.'<br/><br/><a href="./ulist.php">>>返回商户列表</a>',1);
-}else
+}else{
 	showmsg('添加商户失败！<br/>错误信息：'.$DB->error(),4);
 }
 }
 elseif($my=='edit_submit')
 {
 if(!checkRefererHost())exit();
-$uid=$_GET['uid'];
+$uid=intval($_GET['uid']);
 $rows=$DB->getRow("select * from pre_user where uid='$uid' limit 1");
-if(!$rows)
-	showmsg('当前商户不存在！',3);
-$gid=intval($_POST['gid']);
-$settle_id=intval($_POST['settle_id']);
-$account=trim($_POST['account']);
-$username=trim($_POST['username']);
-$money=$_POST['money'];
-$url=trim($_POST['url']);
-$email=trim($_POST['email']);
-$qq=trim($_POST['qq']);
-$phone=trim($_POST['phone']);
-$cert=intval($_POST['cert']);
-$certtype=intval($_POST['certtype']);
-$certmethod=intval($_POST['certmethod']);
-$certno=trim($_POST['certno']);
-$certname=trim($_POST['certname']);
-$certcorpno=trim($_POST['certcorpno']);
-$certcorpname=trim($_POST['certcorpname']);
-$ordername=trim($_POST['ordername']);
-$mode=intval($_POST['mode']);
-$pay=intval($_POST['pay']);
-$settle=intval($_POST['settle']);
-$status=intval($_POST['status']);
-if($account==NULL or $username==NULL){
-showmsg('保存错误,请确保加*项都不为空!',3);
-} else {
-$sql="update `pre_user` set `gid`=:gid, `account`=:account, `username`=:username, `settle_id`=:settle_id, `money`=:money, `url`=:url, `email`=:email, `qq`=:qq, `phone`=:phone, `cert`=:cert, `certtype`=:certtype, `certmethod`=:certmethod, `certno`=:certno, `certname`=:certname, `certcorpno`=:certcorpno, `certcorpname`=:certcorpname, `ordername`=:ordername, `mode`=:mode, `pay`=:pay, `settle`=:settle, `status`=:status where `uid`=:uid";
-$data=[':gid'=>$gid, ':account'=>$account, ':username'=>$username, ':settle_id'=>$settle_id, ':money'=>$money, ':url'=>$url, ':email'=>$email, ':qq'=>$qq, ':phone'=>$phone, ':cert'=>$cert, ':certtype'=>$certtype, ':certmethod'=>$certmethod, ':certno'=>$certno, ':certname'=>$certname, ':certcorpno'=>$certcorpno, ':certcorpname'=>$certcorpname, ':ordername'=>$ordername, ':mode'=>$mode, ':pay'=>$pay, ':settle'=>$settle, ':status'=>$status, ':uid'=>$uid];
-if(!empty($_POST['pwd'])){
-	$pwd = getMd5Pwd(trim($_POST['pwd']), $uid);
-	$sqs=$DB->exec("update `pre_user` set `pwd` ='{$pwd}' where `uid`='$uid'");
-}
-if($DB->exec($sql,$data)!==false||$sqs)
+if(!$rows)showmsg('当前商户不存在！',3);
+$data = [
+	'gid' => intval($_POST['gid']),
+	'settle_id' => intval($_POST['settle_id']),
+	'account' => trim($_POST['account']),
+	'username' => trim($_POST['username']),
+	'money' => trim($_POST['money']),
+	'url' => trim($_POST['url']),
+	'email' => trim($_POST['email']),
+	'qq' => trim($_POST['qq']),
+	'phone' => trim($_POST['phone']),
+	'cert' => intval($_POST['cert']),
+	'certtype' => intval($_POST['certtype']),
+	'certmethod' => intval($_POST['certmethod']),
+	'certno' => trim($_POST['certno']),
+	'certname' => trim($_POST['certname']),
+	'certcorpno' => trim($_POST['certcorpno']),
+	'certcorpname' => trim($_POST['certcorpname']),
+	'ordername' => trim($_POST['ordername']),
+	'mode' => intval($_POST['mode']),
+	'pay' => intval($_POST['mode']),
+	'settle' => intval($_POST['settle']),
+	'status' => intval($_POST['status']),
+];
+
+if(empty($data['account']) || empty($data['username'])) showmsg('必填项不能为空！',3);
+
+if($DB->update('user', $data, ['uid'=>$uid])!==false){
+	if(!empty($_POST['pwd'])){
+		$pwd = getMd5Pwd(trim($_POST['pwd']), $uid);
+		$DB->update('user', ['pwd'=>$pwd], ['uid'=>$uid]);
+	}
 	showmsg('修改商户信息成功！<br/><br/><a href="./ulist.php">>>返回商户列表</a>',1);
-else
+}else{
 	showmsg('修改商户信息失败！'.$DB->error(),4);
 }
 }
@@ -318,8 +342,7 @@ if(!$rows)
 	showmsg('当前商户不存在！',3);
 $setting=$_POST['setting'];
 $channelinfo = json_encode($setting);
-$sql="UPDATE `pre_user` SET `channelinfo`=:channelinfo WHERE `uid`='$uid'";
-if($DB->exec($sql, [':channelinfo'=>$channelinfo])!==false)
+if($DB->update('user', ['channelinfo'=>$channelinfo], ['uid'=>$uid])!==false)
 	showmsg('修改商户信息成功！<br/><br/><a href="./ulist.php">>>返回商户列表</a>',1);
 else
 	showmsg('修改商户信息失败！'.$DB->error(),4);

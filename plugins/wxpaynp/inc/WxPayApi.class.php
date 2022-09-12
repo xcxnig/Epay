@@ -237,12 +237,21 @@ class WxPayApi
         return $inBodyResourceArray;
     }
 
-    private function sendRequest($method, $path, $param){
+    //敏感信息加密
+    public function textEncrypt($str){
+        if (openssl_public_encrypt($str, $encrypted, $this->platformPublicKeyInstance, OPENSSL_PKCS1_OAEP_PADDING)) {
+            $text = base64_encode($encrypted);
+            return $text;
+        }
+        return false;
+    }
+
+    private function sendRequest($method, $path, $param, $headers = []){
         try {
             if($method == 'POST'){
-                $resp = $this->instance->chain($path)->post(['json' => $param, 'verify'=>false]);
+                $resp = $this->instance->chain($path)->post(['json' => $param, 'headers' => $headers, 'verify'=>false]);
             }elseif($method == 'GET'){
-                $resp = $this->instance->chain($path)->get(['query' => $param, 'verify'=>false]);
+                $resp = $this->instance->chain($path)->get(['query' => $param, 'headers' => $headers, 'verify'=>false]);
             }
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             if ($e->hasResponse()) {
@@ -307,7 +316,7 @@ class WxPayApi
             ]);
             return $instance;
         }
-
+        
         $platformPublicKeyInstance = Rsa::from(file_get_contents($platformCertificateFilePath), Rsa::KEY_TYPE_PUBLIC);
         $this->platformPublicKeyInstance = $platformPublicKeyInstance;
 

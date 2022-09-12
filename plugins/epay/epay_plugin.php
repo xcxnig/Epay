@@ -4,9 +4,9 @@ class epay_plugin
 {
 	static public $info = [
 		'name'        => 'epay', //支付插件英文名称，需和目录名称一致，不能有重复
-		'showname'    => '彩虹易支付', //支付插件显示名称
-		'author'      => '彩虹', //支付插件作者
-		'link'        => '', //支付插件作者链接
+		'showname'    => '易支付', //支付插件显示名称
+		'author'      => '八仙源码', //支付插件作者
+		'link'        => '//8xym.cc', //支付插件作者链接
 		'types'       => ['alipay','qqpay','wxpay','bank','jdpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appurl' => [

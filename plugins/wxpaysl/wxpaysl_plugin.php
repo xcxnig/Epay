@@ -36,7 +36,7 @@ class wxpaysl_plugin
 			'3' => 'H5支付',
 			'4' => '小程序支付',
 		],
-		'note' => '上方APPID填写公众号或小程序的皆可，需要在微信服务商后台关联对应的公众号或小程序才能使用。无认证的公众号或小程序无法发起支付！<br/>点金计划商家小票链接（用于公众号支付跳转回网站）：[siteurl]gold.php', //支付密钥填写说明
+		'note' => '<p>上方APPID填写公众号或小程序的皆可，需要在微信服务商后台关联对应的公众号或小程序才能使用。无认证的公众号或小程序无法发起支付！</p><p>如需资金下发（如退款）功能，请将<a href="https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=4_3" target="_blank" rel="noreferrer">API证书</a>放置于<font color="red">/plugins/wxpay/cert/</font>文件夹（或<font color="red">/plugins/wxpay/cert/商户ID/</font>文件夹）</p><p>点金计划商家小票链接（用于公众号支付跳转回网站）：[siteurl]gold.php</p>', //支付密钥填写说明
 		'bindwxmp' => true, //是否支持绑定微信公众号
 		'bindwxa' => true, //是否支持绑定微信小程序
 	];

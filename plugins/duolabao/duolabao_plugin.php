@@ -7,7 +7,7 @@ class duolabao_plugin
 		'showname'    => '哆啦宝支付', //支付插件显示名称
 		'author'      => '哆啦宝', //支付插件作者
 		'link'        => 'http://www.duolabao.com/', //支付插件作者链接
-		'types'       => ['alipay','wxpay','qqpay','bank'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
+		'types'       => ['alipay','wxpay','qqpay','bank','jdpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appid' => [
 				'name' => '商户编号',
@@ -117,12 +117,23 @@ class duolabao_plugin
 		return ['type'=>'qrcode','page'=>'bank_qrcode','url'=>$code_url];
 	}
 
+	//京东支付
+	static public function jdpay(){
+		try{
+			$code_url = self::addOrder();
+		}catch(Exception $ex){
+			return ['type'=>'error','msg'=>$ex->getMessage()];
+		}
+
+		return ['type'=>'qrcode','page'=>'bank_qrcode','url'=>$code_url];
+	}
+
 	//异步回调
 	static public function notify(){
 		global $channel, $order;
 
 		require PAY_ROOT.'inc/App.php';
-		//@file_put_contents('./query.txt' , json_encode($_REQUEST));
+		@file_put_contents('./query.txt' , json_encode($_REQUEST));
 		if (App::config(include PAY_ROOT.'inc/config.php')->verifyNotify()) {
 			$trade_no = daddslashes($_REQUEST['requestNum']); //流水号
 			$orderAmount = $_REQUEST['orderAmount']; //订单金额

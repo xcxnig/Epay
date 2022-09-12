@@ -2,8 +2,8 @@
 error_reporting(0);
 //error_reporting(E_ERROR | E_WARNING | E_PARSE);
 if(defined('IN_CRONLITE'))return;
-define('VERSION', '3041');
-define('DB_VERSION', '2022');
+define('VERSION', '3043');
+define('DB_VERSION', '2024');
 define('IN_CRONLITE', true);
 define('SYSTEM_ROOT', dirname(__FILE__).'/');
 define('ROOT', dirname(SYSTEM_ROOT).'/');

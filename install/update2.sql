@@ -89,3 +89,6 @@ CREATE TABLE IF NOT EXISTS `pre_domain` (
  PRIMARY KEY (`id`),
  KEY `domain` (`domain`,`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `pre_user`
+ADD COLUMN `refund` tinyint(1) NOT NULL DEFAULT '0';

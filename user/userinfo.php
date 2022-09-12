@@ -36,7 +36,7 @@ if(!$conf['apiurl'])$conf['apiurl'] = $siteurl;
 	<li style="width: 25%;" align="center" class="<?php echo $mod=='account'?'active':null?>">
 		<a href="userinfo.php?mod=account">修改密码</a>
 	</li>
-	<?php if($conf['cert_channel']){?>
+	<?php if($conf['cert_open']>0){?>
 	<li style="width: 25%;" align="center">
 		<a href="certificate.php">实名认证</a>
 	</li>

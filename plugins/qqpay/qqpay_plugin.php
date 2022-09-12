@@ -34,7 +34,7 @@ class qqpay_plugin
 			'1' => '扫码支付(包含H5)',
 			'2' => '公众号支付',
 		],
-		'note' => '', //支付密钥填写说明
+		'note' => '<p>如需资金下发（如退款、企业付款）功能，请将<a href="https://mp.qpay.tenpay.com/buss/wiki/206/1213" target="_blank" rel="noreferrer">API证书</a>放置于<font color="red">/plugins/qqpay/cert/</font>文件夹（或<font color="red">/plugins/qqpay/cert/商户ID/</font>文件夹）</p>', //支付密钥填写说明
 		'bindwxmp' => false, //是否支持绑定微信公众号
 		'bindwxa' => false, //是否支持绑定微信小程序
 	];

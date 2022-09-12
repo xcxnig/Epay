@@ -21,7 +21,7 @@ class jdpay_plugin
 			],
 		],
 		'select' => null,
-		'note' => '需要将密钥文件上传到 /plugins/jdpay/inc/cert 文件夹内', //支付密钥填写说明
+		'note' => '需要将商户私钥seller_rsa_private_key.pem上传到 /plugins/jdpay/inc/cert 文件夹内', //支付密钥填写说明
 		'bindwxmp' => false, //是否支持绑定微信公众号
 		'bindwxa' => false, //是否支持绑定微信小程序
 	];

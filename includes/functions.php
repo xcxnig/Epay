@@ -622,7 +622,11 @@ function transfer_do($type, $channel, $out_trade_no, $payee_account, $payee_real
 	if($type == 'alipay'){
 		return transferToAlipay($channel, $out_trade_no, $payee_account, $payee_real_name, $money);
 	}elseif($type == 'wxpay'){
-		return transferToWeixin($channel, $out_trade_no, $payee_account, $payee_real_name, $money);
+		if($channel['plugin'] == 'wxpayn'){
+			return transferToWeixinNew($channel, $out_trade_no, $payee_account, $payee_real_name, $money);
+		}else{
+			return transferToWeixin($channel, $out_trade_no, $payee_account, $payee_real_name, $money);
+		}
 	}elseif($type == 'qqpay'){
 		return transferToQQ($channel, $out_trade_no, $payee_account, $payee_real_name, $money);
 	}elseif($type == 'bank'){
@@ -712,6 +716,74 @@ function transferToWeixin($channel, $out_trade_no, $payee_account, $payee_real_n
 		$data['msg']='未知错误 '.$result["return_msg"];
 	}
 	return $data;
+}
+
+//微信商家转账
+function transferToWeixinNew($channel, $out_trade_no, $payee_account, $payee_real_name, $money){
+	global $conf;
+	$fail_reason_desc = ['ACCOUNT_FROZEN'=>'账户冻结', 'REAL_NAME_CHECK_FAIL'=>'用户未实名', 'NAME_NOT_CORRECT'=>'用户姓名校验失败', 'OPENID_INVALID'=>'Openid校验失败', 'TRANSFER_QUOTA_EXCEED'=>'超过用户单笔收款额度', 'DAY_RECEIVED_QUOTA_EXCEED'=>'超过用户单日收款额度', 'MONTH_RECEIVED_QUOTA_EXCEED'=>'超过用户单月收款额度', 'DAY_RECEIVED_COUNT_EXCEED'=>'超过用户单日收款次数', 'PRODUCT_AUTH_CHECK_FAIL'=>'产品权限校验失败', 'OVERDUE_CLOSE'=>'转账关闭', 'ID_CARD_NOT_CORRECT'=>'用户身份证校验失败', 'ACCOUNT_NOT_EXIST'=>'用户账户不存在', 'TRANSFER_RISK'=>'转账存在风险', 'REALNAME_ACCOUNT_RECEIVED_QUOTA_EXCEED'=>'用户账户收款受限，请引导用户在微信支付查看详情', 'RECEIVE_ACCOUNT_NOT_PERMMIT'=>'未配置该用户为转账收款人', 'PAYER_ACCOUNT_ABNORMAL'=>'商户账户付款受限，可前往商户平台-违约记录获取解除功能限制指引', 'PAYEE_ACCOUNT_ABNORMAL'=>'用户账户收款异常，请引导用户完善身份信息', 'TRANSFER_REMARK_SET_FAIL'=>'转账备注设置失败，请调整对应文案后重新再试'];
+	define("IN_PLUGIN", true);
+	define("PAY_ROOT", PLUGIN_ROOT.'wxpayn/');
+	$pay_config = require(PAY_ROOT.'inc/WxPayConfig.php');
+	require(PAY_ROOT.'inc/WxPayApi.class.php');
+	$out_batch_no = $out_trade_no;
+
+	try{
+		$client = new WxPayApi($pay_config);
+	} catch (Exception $e) {
+		return ['code'=>-1, 'msg'=>$e->getMessage()];
+	}
+
+	$transfer_detail = [
+		'out_detail_no' => $out_trade_no,
+		'transfer_amount' => intval($money*100),
+		'transfer_remark' => $conf['transfer_desc'],
+		'openid' => $payee_account,
+	];
+	if(!empty($payee_real_name)){
+		$transfer_detail['user_name'] = $client->textEncrypt($payee_real_name);
+	}
+	$param = [
+		'out_batch_no' => $out_batch_no,
+		'batch_name' => '转账给'.$payee_real_name,
+		'batch_remark' => date("YmdHis"),
+		'total_amount' => intval($money*100),
+		'total_num' => 1,
+		'transfer_detail_list' => [
+			$transfer_detail
+		],
+	];
+
+	try{
+		$result = $client->transfer($param);
+	} catch (Exception $e) {
+		$errorMsg = $e->getMessage();
+		if(!strpos($errorMsg, '对应的订单已经存在')){
+			return ['code'=>-1, 'msg'=>$errorMsg];
+		}
+	}
+	$batch_id = $result['batch_id'];
+
+	usleep(500000);
+
+	try{
+		$result = $client->transferoutdetail($out_batch_no, $out_trade_no);
+	} catch (Exception $e) {
+		return ['code'=>-1, 'msg'=>$e->getMessage()];
+	}
+	if($result['detail_status'] == 'PROCESSING'){
+		return ['code'=>0, 'ret'=>0, 'msg'=>'转账中，可稍后重试查看结果', 'sub_code'=>'', 'sub_msg'=>'转账中，可稍后重试查看结果'];
+	}elseif($result['detail_status'] == 'FAIL'){
+		if($result['fail_reason'] == 'TRANSFER_REMARK_SET_FAIL' || $result['fail_reason'] == 'PAYER_ACCOUNT_ABNORMAL' || $result['fail_reason'] == 'PRODUCT_AUTH_CHECK_FAIL'){
+			return ['code'=>-1, 'msg'=>'['.$result['fail_reason'].']'.$fail_reason_desc[$result['fail_reason']]];
+		}else{
+			return ['code'=>0, 'ret'=>0, 'msg'=>'['.$result['fail_reason'].']'.$fail_reason_desc[$result['fail_reason']], 'sub_code'=>$result['fail_reason'], 'sub_msg'=>$fail_reason_desc[$result['fail_reason']]];
+		}
+	}elseif($result['detail_status'] == 'SUCCESS'){
+		return ['code'=>0, 'ret'=>1, 'msg'=>'success', 'orderid'=>$result['detail_id'], 'paydate'=>$result['update_time']];
+	}else{
+		return ['code'=>-1, 'msg'=>'转账状态未知'];
+	}
 }
 
 //QQ钱包企业付款

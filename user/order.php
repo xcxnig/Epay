@@ -78,6 +78,7 @@ unset($rs);
 <script src="<?php echo $cdnpublic?>bootstrap-table/1.20.2/extensions/page-jump-to/bootstrap-table-page-jump-to.min.js"></script>
 <script src="../assets/js/custom.js"></script>
 <script>
+var is_user_refund = '<?php echo $conf['user_refund']?>';
 $(document).ready(function(){
 	updateToolbar();
 	const defaultPageSize = 20;
@@ -138,7 +139,11 @@ $(document).ready(function(){
 				field: '',
 				title: '操作',
 				formatter: function(value, row, index) {
-					return '<a href="./record.php?type=3&kw='+row.trade_no+'" class="btn btn-info btn-xs">明细</a>&nbsp;<a href="javascript:callnotify(\''+row.trade_no+'\')" class="btn btn-success btn-xs">补单</a>';
+					var html = '<a href="./record.php?type=3&kw='+row.trade_no+'" class="btn btn-info btn-xs">明细</a>&nbsp;<a href="javascript:callnotify(\''+row.trade_no+'\')" class="btn btn-success btn-xs">补单</a>';
+					if(is_user_refund=='1' && row.status=='1'){
+						html += '&nbsp;<a href="javascript:refund(\''+row.trade_no+'\')" class="btn btn-danger btn-xs">退款</a>';
+					}
+					return html;
 				}
 			},
 		],
@@ -198,5 +203,55 @@ function callreturn(trade_no){
 	});
 	return false;
 }
-
+function refund(trade_no) {
+	var ii = layer.load(2, {shade:[0.1,'#fff']});
+	$.ajax({
+		type : 'POST',
+		url : 'ajax2.php?act=refund_query',
+		data : {trade_no:trade_no},
+		dataType : 'json',
+		success : function(data) {
+			layer.close(ii);
+			if(data.code == 0){
+				layer.open({
+					area: ['360px'],
+					title: '退款确认',
+					content: '<p>此操作将直接原路退款该订单，每个订单只能操作一次退款，退款金额不能大于订单金额。</p><div class="form-group"><div class="input-group"><div class="input-group-addon">退款金额</div><input type="text" class="form-control" name="refund2" value="'+data.money+'" placeholder="请输入退款金额" autocomplete="off"/></div></div><div class="form-group"><div class="input-group"><div class="input-group-addon">登录密码</div><input type="text" class="form-control" name="paypwd" value="" placeholder="请输入用户登录密码" autocomplete="off"/></div></div>',
+					yes: function(){
+						var money = $("input[name='refund2']").val();
+						var paypwd = $("input[name='paypwd']").val();
+						if(money == '' || paypwd == ''){
+							layer.alert('金额或密码不能为空');return;
+						}
+						var ii = layer.load(2, {shade:[0.1,'#fff']});
+						$.ajax({
+							type : 'POST',
+							url : 'ajax2.php?act=refund_submit',
+							data : {trade_no:trade_no, money:money, pwd:paypwd},
+							dataType : 'json',
+							success : function(data) {
+								layer.close(ii);
+								if(data.code == 0){
+									layer.alert(data.msg, {icon:1}, function(){ layer.closeAll();searchSubmit(); });
+								}else{
+									layer.alert(data.msg, {icon:7});
+								}
+							},
+							error:function(data){
+								layer.close(ii);
+								layer.msg('服务器错误');
+							}
+						});
+					}
+				});
+			}else{
+				layer.alert(data.msg, {icon:7});
+			}
+		},
+		error:function(data){
+			layer.close(ii);
+			layer.msg('服务器错误');
+		}
+	});
+}
 </script>

@@ -142,7 +142,34 @@ class WxPayApi
             'appid' => $this->config['appid'],
         ];
         $param = array_merge($publicParam, $param);
-        return $this->sendRequest('POST', $path, $param);
+        $headers = [
+            'Wechatpay-Serial' => $this->platformCertificateSerial,
+        ];
+        return $this->sendRequest('POST', $path, $param, $headers);
+    }
+
+    //微信批次单号查询转账批次单
+    public function transferbatch($batch_id, $param){
+        $path = 'v3/transfer/batches/batch-id/'.$batch_id;
+        return $this->sendRequest('GET', $path, $param);
+    }
+
+    //微信明细单号查询转账明细单
+    public function transferdetail($batch_id, $detail_id){
+        $path = 'v3/transfer/batches/batch-id/'.$batch_id.'/details/detail-id/'.$detail_id;
+        return $this->sendRequest('GET', $path, []);
+    }
+
+    //商家批次单号查询转账批次单
+    public function transferoutbatch($out_batch_no, $param){
+        $path = 'v3/transfer/batches/out-batch-no/'.$out_batch_no;
+        return $this->sendRequest('GET', $path, $param);
+    }
+
+    //商家明细单号查询转账明细单
+    public function transferoutdetail($out_batch_no, $out_detail_no){
+        $path = 'v3/transfer/batches/out-batch-no/'.$out_batch_no.'/details/out-detail-no/'.$out_detail_no;
+        return $this->sendRequest('GET', $path, []);
     }
 
     //回调通知
@@ -192,12 +219,21 @@ class WxPayApi
         return $inBodyResourceArray;
     }
 
-    private function sendRequest($method, $path, $param){
+    //敏感信息加密
+    public function textEncrypt($str){
+        if (openssl_public_encrypt($str, $encrypted, $this->platformPublicKeyInstance, OPENSSL_PKCS1_OAEP_PADDING)) {
+            $text = base64_encode($encrypted);
+            return $text;
+        }
+        return false;
+    }
+
+    private function sendRequest($method, $path, $param, $headers = []){
         try {
             if($method == 'POST'){
-                $resp = $this->instance->chain($path)->post(['json' => $param, 'verify'=>false]);
+                $resp = $this->instance->chain($path)->post(['json' => $param, 'headers' => $headers, 'verify'=>false]);
             }elseif($method == 'GET'){
-                $resp = $this->instance->chain($path)->get(['query' => $param, 'verify'=>false]);
+                $resp = $this->instance->chain($path)->get(['query' => $param, 'headers' => $headers, 'verify'=>false]);
             }
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             if ($e->hasResponse()) {

@@ -144,7 +144,7 @@ switch($conf['user_style']){
                       <span>修改密码</span>
                     </a>
                   </li>
-				  <?php if($conf['cert_channel']){?>
+				  <?php if($conf['cert_open']>0){?>
 				  <li>
                     <a href="certificate.php">
                       <span>实名认证</span>

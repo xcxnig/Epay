@@ -32,6 +32,12 @@ class Channel {
 		return $value;
 	}
 
+	static public function info($id){
+		global $DB;
+		$value=$DB->getRow("SELECT id,plugin,type,rate,apptype,mode,paymin,paymax FROM pre_channel WHERE id='$id' LIMIT 1");
+		return ['typeid'=>$value['type'], 'plugin'=>$value['plugin'], 'channel'=>$value['id'], 'rate'=>$value['rate'], 'apptype'=>$value['apptype'], 'mode'=>$value['mode'], 'paymin'=>$value['paymin'], 'paymax'=>$value['paymax']];
+	}
+
 	static public function getWeixin($id){
 		global $DB;
 		$value=$DB->getRow("SELECT * FROM pre_weixin WHERE id='$id' LIMIT 1");

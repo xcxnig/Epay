@@ -118,8 +118,12 @@ class chinaums_plugin
 
 		if(isset($result['errCode']) && $result['errCode']=='SUCCESS'){
 			return $result['billQRCode'];
+		}elseif(isset($result['errMsg'])){
+			throw new Exception($result['errMsg']);
+		}elseif(isset($result['errInfo'])){
+			throw new Exception($result['errInfo']);
 		}else{
-			throw new Exception($result['errMsg']?$result['errMsg']:'返回数据解析失败');
+			throw new Exception('返回数据解析失败');
 		}
 	}
 

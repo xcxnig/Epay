@@ -10,7 +10,7 @@ class ysepay_plugin
 		'types'       => ['alipay','qqpay','wxpay','bank'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appid' => [
-				'name' => '商户号',
+				'name' => '服务商商户号',
 				'type' => 'input',
 				'note' => '',
 			],
@@ -23,6 +23,11 @@ class ysepay_plugin
 				'name' => '商户私钥',
 				'type' => 'textarea',
 				'note' => '',
+			],
+			'appmchid' => [
+				'name' => '收款商户号',
+				'type' => 'input',
+				'note' => '不填写则和服务商商户号相同',
 			],
 		],
 		'select' => null,
@@ -85,10 +90,9 @@ class ysepay_plugin
 			'subject' => $ordername,
 			'total_amount' => $order['realmoney'],
 			'currency' => 'CNY',
-			'seller_id' => $config['partner_id'],
-			'seller_name' => '',
+			'seller_id' => $config['seller_id'],
 			'timeout_express' => '7d',
-			'business_code' => '',
+			'business_code' => '00510030',
 			'bank_type' => $bank_type,
 		];
 
@@ -105,7 +109,7 @@ class ysepay_plugin
 		$result = json_decode(json_encode($response->$responseNode), true);
 
         if (isset($result['code']) && $result['code'] == 10000) {
-			return $result['qr_code_url'];
+			return $result['source_qr_code_url'];
         } elseif(isset($result['sub_code'])) {
 			throw new Exception('['.$result['sub_code'].']'.$result['sub_msg']);
 		}else{
@@ -115,7 +119,7 @@ class ysepay_plugin
 
 	//公众号小程序支付
 	static private function weixin($appid, $openid, $isminipg = '2'){
-		global $siteurl, $channel, $order, $ordername, $conf;
+		global $siteurl, $channel, $order, $ordername, $conf, $clientip;
 
 		require(PAY_ROOT."inc/config.php");
 		require(PAY_ROOT."inc/PayClient.php");
@@ -127,13 +131,13 @@ class ysepay_plugin
 			'subject' => $ordername,
 			'total_amount' => $order['realmoney'],
 			'currency' => 'CNY',
-			'seller_id' => $config['partner_id'],
-			'seller_name' => '',
+			'seller_id' => $config['seller_id'],
 			'timeout_express' => '7d',
-			'business_code' => '',
+			'business_code' => '00510030',
 			'appid' => $appid,
 			'sub_openid' => $openid,
 			'is_minipg' => $isminipg,
+			'payer_ip' => $clientip,
 		];
 
 		$client = new PayClient ();
@@ -170,11 +174,14 @@ class ysepay_plugin
 
 	//微信扫码支付
 	static public function wxpay(){
-		try{
+		global $siteurl;
+		$code_url = $siteurl.'pay/wxjspay/'.TRADE_NO.'/';
+
+		/*try{
 			$code_url = self::qrcode('1902000');
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
-		}
+		}*/
 
 		if (checkmobile()==true) {
 			return ['type'=>'qrcode','page'=>'wxpay_wap','url'=>$code_url];

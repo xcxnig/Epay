@@ -267,6 +267,7 @@ case 'edit_info':
 	$qq=daddslashes(htmlspecialchars(strip_tags(trim($_POST['qq']))));
 	$url=daddslashes(htmlspecialchars(strip_tags(trim($_POST['url']))));
 	$keylogin=intval($_POST['keylogin']);
+	$refund=intval($_POST['refund']);
 
 	if($qq==null || $url==null){
 		exit('{"code":-1,"msg":"请确保每项都不为空"}');
@@ -287,9 +288,9 @@ case 'edit_info':
 				exit('{"code":-1,"msg":"邮箱格式不正确"}');
 			}
 		}
-		$sqs=$DB->exec("update `pre_user` set `email` ='{$email}',`qq` ='{$qq}',`url` ='{$url}',`keylogin` ='{$keylogin}' where `uid`='$uid'");
+		$sqs = $DB->update('user', ['email'=>$email, 'qq'=>$qq, 'url'=>$url, 'keylogin'=>$keylogin, 'refund'=>$refund], ['uid'=>$uid]);
 	}else{
-		$sqs=$DB->exec("update `pre_user` set `qq` ='{$qq}',`url` ='{$url}',`keylogin` ='{$keylogin}' where `uid`='$uid'");
+		$sqs = $DB->update('user', ['qq'=>$qq, 'url'=>$url, 'keylogin'=>$keylogin, 'refund'=>$refund], ['uid'=>$uid]);
 	}
 	if($sqs!==false){
 		exit('{"code":1,"msg":"succ"}');
@@ -560,7 +561,7 @@ case 'cert_geturl':
 			require_once PAY_ROOT."inc/AlipayCertdocService.php";
 			$certdoc = new AlipayCertdocService($config);
 			$state = authcode($uid, 'ENCODE', SYS_KEY);
-			$url = $certdoc->getOauthUrl($verify_id, $state);
+			$url = $certdoc->getOauthUrl($userrow['certtoken'], $state);
 			exit(json_encode(['code'=>1, 'msg'=>'ok', 'url'=>$url]));
 		}else{
 			$url = $_SESSION['qrcode_url'];
@@ -778,6 +779,63 @@ case 'recordList':
 	$list = $DB->getAll("SELECT * FROM pre_record WHERE{$sql} order by id desc limit $offset,$limit");
 
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
+break;
+
+case 'refund_query': //退款查询
+	if(!$conf['user_refund'])exit('{"code":-1,"msg":"未开启商户后台自助退款"}');
+	$trade_no=daddslashes(trim($_POST['trade_no']));
+	$row=$DB->getRow("select * from pre_order where trade_no='$trade_no' and uid='$uid' limit 1");
+	if(!$row)
+		exit('{"code":-1,"msg":"当前订单不存在！"}');
+	if($row['status']!=1)
+		exit('{"code":-1,"msg":"只支持退款已支付状态的订单"}');
+	if(!$row['api_trade_no'])
+		exit('{"code":-1,"msg":"接口订单号不存在"}');
+	$channel = \lib\Channel::get($row['channel']);
+	if(!$channel){
+		exit('{"code":-1,"msg":"当前支付通道信息不存在"}');
+	}
+	if(\lib\Plugin::isrefund($channel['plugin'])==false){
+		exit('{"code":-1,"msg":"当前支付通道不支持自助退款"}');
+	}
+	$money = $row['money'];
+	exit(json_encode(['code'=>0, 'money'=>$money]));
+break;
+case 'refund_submit': //确认退款
+	if(!$conf['user_refund'])exit('{"code":-1,"msg":"未开启商户后台自助退款"}');
+	$trade_no=daddslashes(trim($_POST['trade_no']));
+	$pwd=trim($_POST['pwd']);
+	$money = trim($_POST['money']);
+	if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit('{"code":-1,"msg":"金额输入错误"}');
+	if(getMd5Pwd($pwd, $userrow['uid'])!=$userrow['pwd'])
+		exit('{"code":-1,"msg":"登录密码输入错误！"}');
+	$row=$DB->getRow("select uid,money,getmoney,status,channel from pre_order where trade_no='$trade_no' and uid='$uid' limit 1");
+	if(!$row)
+		exit('{"code":-1,"msg":"当前订单不存在！"}');
+	if($row['status']!=1)
+		exit('{"code":-1,"msg":"只支持退款已支付状态的订单"}');
+	if($money>$row['money'])exit('{"code":-1,"msg":"退款金额不能大于订单金额"}');
+	if($money==$row['money'] || $money>=$row['getmoney']){
+		$refundmoney = $money;
+		$reducemoney = $row['getmoney'];
+	}else{
+		$refundmoney = $money;
+		$reducemoney = $money;
+	}
+	if($reducemoney > $userrow['money']){
+		exit('{"code":-1,"msg":"商户余额不足，请先充值"}');
+	}
+	$message = null;
+	if(\lib\Plugin::refund($trade_no, $refundmoney, $message)){
+		$mode = $DB->getColumn("select mode from pre_channel where id='{$row['channel']}'");
+		if($reducemoney>0 && $mode=='0'){
+			changeUserMoney($row['uid'], $reducemoney, false, '订单退款', $trade_no);
+		}
+		$DB->exec("update pre_order set status='2' where trade_no='$trade_no'");
+		exit(json_encode(['code'=>0, 'msg'=>'退款成功！退款金额￥'.$refundmoney]));
+	}else{
+		exit('{"code":-1,"msg":"退款失败：'.$message.'"}');
+	}
 break;
 
 default:

@@ -414,6 +414,14 @@ $(document).ready(function(){
 	  <div class="col-sm-9"><select class="form-control" name="pay_domain_forbid" default="<?php echo $conf['pay_domain_forbid']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
 	</div><br/>
 	<div class="form-group">
+	  <label class="col-sm-3 control-label">支付宝电脑网站支付使用扫码模式</label>
+	  <div class="col-sm-9"><select class="form-control" name="alipay_paymode" default="<?php echo $conf['alipay_paymode']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，如果使用支付宝"电脑网站支付"，则直接显示二维码，这种模式下跳转回网站速度更快</font></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">开启商户后台自助退款</label>
+	  <div class="col-sm-9"><select class="form-control" name="user_refund" default="<?php echo $conf['user_refund']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	</div><br/>
+	<div class="form-group">
 	  <label class="col-sm-3 control-label">支付IP黑名单</label>
 	  <div class="col-sm-9"><textarea class="form-control" name="blockips" rows="2" placeholder="多个用|隔开"><?php echo $conf['blockips']?></textarea></div>
 	</div><br/>
@@ -498,7 +506,7 @@ $(document).ready(function(){
 <?php
 }elseif($mod=='transfer'){
 	$alipay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='alipay'");
-	$wxpay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='wxpay'");
+	$wxpay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='wxpay' OR plugin='wxpayn'");
 	$qqpay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='qqpay'");
 ?>
 <div class="panel panel-primary">
@@ -515,15 +523,15 @@ $(document).ready(function(){
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">支付宝转账接口通道</label>
-	  <div class="col-sm-9"><select class="form-control" name="transfer_alipay" default="<?php echo $conf['transfer_alipay']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为alipay的支付通道，同时也是银行卡转账通道<br/>如果使用公钥证书模式，请将<font color="red">应用公钥证书、支付宝公钥证书、支付宝根证书</font>3个crt文件放置于<font color="red">/plugins/alipay/cert/</font>文件夹（或<font color="red">/plugins/alipay/cert/应用APPID/</font>文件夹）</font></div>
+	  <div class="col-sm-9"><select class="form-control" name="transfer_alipay" default="<?php echo $conf['transfer_alipay']?>"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为alipay的支付通道，同时也作为银行卡转账通道。需签约“转账到支付宝账户”产品。</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">微信企业付款通道</label>
-	  <div class="col-sm-9"><select class="form-control" name="transfer_wxpay" default="<?php echo $conf['transfer_wxpay']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为wxpay的支付通道<br/>请将<a href="https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=4_3" target="_blank" rel="noreferrer">API证书</a>放置于<font color="red">/plugins/wxpay/cert/</font>文件夹（或<font color="red">/plugins/wxpay/cert/商户ID/</font>文件夹）</font></div>
+	  <div class="col-sm-9"><select class="form-control" name="transfer_wxpay" default="<?php echo $conf['transfer_wxpay']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为wxpay或wxpayn的支付通道。需申请“企业付款”（V2插件）或“商家转账到零钱”（V3插件）产品。</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">QQ钱包企业付款通道</label>
-	  <div class="col-sm-9"><select class="form-control" name="transfer_qqpay" default="<?php echo $conf['transfer_qqpay']?>"><option value="0">关闭</option><?php foreach($qqpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为qqpay的支付通道<br/>请将<a href="https://qpay.qq.com/buss/wiki/206/1213" target="_blank" rel="noreferrer">API证书</a>放置于<font color="red">/plugins/qqpay/cert/</font>文件夹（或<font color="red">/plugins/qqpay/cert/商户ID/</font>文件夹）</font></div>
+	  <div class="col-sm-9"><select class="form-control" name="transfer_qqpay" default="<?php echo $conf['transfer_qqpay']?>"><option value="0">关闭</option><?php foreach($qqpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">请先添加支付插件为qqpay的支付通道。需申请“企业付款”产品。</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
@@ -609,7 +617,7 @@ $(document).ready(function(){
 <div class="panel-footer">
 <span class="glyphicon glyphicon-info-sign"></span>
 <br/><b>支付宝身份验证：</b><a href="https://b.alipay.com/signing/productDetailV2.htm?productId=I1080300001000010588" target="_blank" rel="noreferrer">申请地址</a>，该接口费用1元/人，支持人脸识别，同一个人重复验证不重复收费
-<br/><b>支付宝实名信息验证：</b><a href="https://nengli.alipay.com/abilityprod/detail?abilityCode=AM010501000000075155" target="_blank" rel="noreferrer">申请地址</a>，该接口完全免费，授权回调地址填写：<?php echo $siteurl.'user/oauth.php';?>
+<br/><b>支付宝实名信息验证：</b><a href="https://opendocs.alipay.com/open/repo-00hddl" target="_blank" rel="noreferrer">申请地址</a>，该接口完全免费，授权回调地址填写：<?php echo $siteurl.'user/oauth.php';?>
 <br/><b>阿里云金融级实人认证：</b><a href="https://www.aliyun.com/product/cloudauth" target="_blank" rel="noreferrer">申请地址</a>｜<a href="https://usercenter.console.aliyun.com/#/manage/ak" target="_blank" rel="noreferrer">获取密钥</a>，该接口费用1元/人，支持人脸识别，同一个人重复验证不重复收费。无需签约，只需要阿里云企业认证账号即可开通。
 <br/><b>微信扫码实名认证：</b><a href="https://cloud.tencent.com/product/faceid" target="_blank" rel="noreferrer">申请地址</a>｜<a href="https://console.cloud.tencent.com/cam/capi" target="_blank" rel="noreferrer">获取密钥</a>，接口0.3元/次
 <br/><b>手机号三要素实名认证：</b><a href="https://market.aliyun.com/products/57000002/cmapi031847.html" target="_blank" rel="noreferrer">点击进入</a>

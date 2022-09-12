@@ -52,7 +52,7 @@ include './head.php';
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="./">彩虹易支付管理中心</a>
+        <a class="navbar-brand" href="./">易支付管理中心</a>
       </div><!-- /.navbar-header -->
       <div id="navbar" class="collapse navbar-collapse">
         <ul class="nav navbar-nav navbar-right">

@@ -39,7 +39,9 @@ class jeepay_plugin
 			'6' => '微信H5',
 			'7' => '微信公众号',
 			'8' => '微信小程序',
-			'9' => '银联聚合',
+			'9' => '云闪付扫码',
+			'10' => '聚合扫码',
+			'11' => 'WEB收银台',
 		],
 		'note' => '', //支付密钥填写说明
 		'bindwxmp' => true, //是否支持绑定微信公众号
@@ -153,9 +155,7 @@ class jeepay_plugin
 	//支付宝扫码支付
 	static public function alipay(){
 		global $channel, $device, $mdevice, $siteurl;
-		if(in_array('9',$channel['apptype'])){
-			$wayCode = 'UNION_QR';
-		}elseif(in_array('3',$channel['apptype']) && ($device=='mobile' || checkmobile())){
+		if(in_array('3',$channel['apptype']) && ($device=='mobile' || checkmobile())){
 			$wayCode = 'ALI_WAP';
 		}elseif(in_array('2',$channel['apptype']) && ($device=='pc' || !checkmobile())){
 			$wayCode = 'ALI_PC';
@@ -164,6 +164,10 @@ class jeepay_plugin
 		}elseif(in_array('4',$channel['apptype'])){
 			$qrcode_url = $siteurl.'pay/alipayjs/'.TRADE_NO.'/';
 			return ['type'=>'qrcode','page'=>'alipay_qrcode','url'=>$qrcode_url];
+		}elseif(in_array('10',$channel['apptype'])){
+			$wayCode = 'QR_CASHIER';
+		}elseif(in_array('11',$channel['apptype'])){
+			$wayCode = 'WEB_CASHIER';
 		}else{
 			return ['type'=>'error','msg'=>'当前支付通道没有开启的支付方式'];
 		}
@@ -221,16 +225,20 @@ class jeepay_plugin
 		}elseif($type == 'form'){
 			return ['type'=>'html','url'=>$payData];
 		}else{
-			return ['type'=>'qrcode','page'=>'alipay_qrcode','url'=>$payData];
+			if($_GET['d']=='1'){
+				$redirect_url='data.backurl';
+			}else{
+				$redirect_url='\'/pay/ok/'.TRADE_NO.'/\'';
+			}
+			$arr = json_decode($payData, true);
+			return ['type'=>'page','page'=>'alipay_jspay','data'=>['alipay_trade_no'=>$arr['alipayTradeNo'], 'redirect_url'=>$redirect_url]];
 		}
 	}
 
 	//微信扫码支付
 	static public function wxpay(){
 		global $channel, $device, $mdevice, $siteurl;
-		if(in_array('9',$channel['apptype'])){
-			$wayCode = 'UNION_QR';
-		}elseif(in_array('5',$channel['apptype'])){
+		if(in_array('5',$channel['apptype'])){
 			$wayCode = 'WX_NATIVE';
 		}elseif(in_array('7',$channel['apptype'])){
 			$qrcode_url = $siteurl.'pay/wxjspay/'.TRADE_NO.'/';
@@ -238,6 +246,10 @@ class jeepay_plugin
 		}elseif(in_array('8',$channel['apptype'])){
 			$qrcode_url = $siteurl.'pay/wxwappay/'.TRADE_NO.'/';
 			return ['type'=>'qrcode','page'=>'wxpay_qrcode','url'=>$qrcode_url];
+		}elseif(in_array('10',$channel['apptype'])){
+			$wayCode = 'QR_CASHIER';
+		}elseif(in_array('11',$channel['apptype'])){
+			$wayCode = 'WEB_CASHIER';
 		}else{
 			return ['type'=>'error','msg'=>'当前支付通道没有开启的支付方式'];
 		}
@@ -260,13 +272,30 @@ class jeepay_plugin
 
 	//云闪付扫码支付
 	static public function bank(){
+		global $channel;
+		if(in_array('9',$channel['apptype'])){
+			$wayCode = 'YSF_NATIVE';
+		}elseif(in_array('10',$channel['apptype'])){
+			$wayCode = 'QR_CASHIER';
+		}elseif(in_array('11',$channel['apptype'])){
+			$wayCode = 'WEB_CASHIER';
+		}else{
+			return ['type'=>'error','msg'=>'当前支付通道没有开启的支付方式'];
+		}
+
 		try{
-			list($type, $code_url) = self::addOrder('YSF_NATIVE');
+			list($type, $payData) = self::addOrder($wayCode);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'云闪付下单失败！'.$ex->getMessage()];
 		}
 
-		return ['type'=>'qrcode','page'=>'bank_qrcode','url'=>$code_url];
+		if($type == 'payurl'){
+			return ['type'=>'jump','url'=>$payData];
+		}elseif($type == 'form'){
+			return ['type'=>'html','url'=>$payData];
+		}else{
+			return ['type'=>'qrcode','page'=>'bank_qrcode','url'=>$payData];
+		}
 	}
 
 	//微信公众号支付
@@ -472,6 +501,11 @@ class jeepay_plugin
 		} else {
 			return ['code'=>-1, 'msg'=>$result['msg']?$result['msg']:'返回数据解析失败'];
 		}
+	}
+
+	//支付成功页面
+	static public function ok(){
+		return ['type'=>'page','page'=>'ok'];
 	}
 
 }

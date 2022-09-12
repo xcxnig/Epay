@@ -106,6 +106,16 @@ class AlipayTradePagePayContentBuilder
         return $this->totalAmount;
     }
 
+    public function setQrPayMode($qr_pay_mode)
+    {
+        $this->bizContentarr['qr_pay_mode'] = $qr_pay_mode;
+    }
+
+    public function setQrcodeWidth($qrcode_width)
+    {
+        $this->bizContentarr['qrcode_width'] = $qrcode_width;
+    }
+
 }
 
 ?>

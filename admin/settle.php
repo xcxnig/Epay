@@ -180,8 +180,8 @@ function completeBatch(batch){
 }
 function download_csv(batch){
 	var paymsg = '';
-	paymsg+='<a class="btn btn-default btn-block" href="download.php?batch='+batch+'" style="margin-top:10px;">通用结算信息表格</a>';
-	paymsg+='<a class="btn btn-default btn-block" href="download.php?type=alipay&batch='+batch+'" style="margin-top:10px;">支付宝批量付款表格</a>';
+	paymsg+='<a class="btn btn-default btn-block" href="download.php?act=settle&batch='+batch+'" style="margin-top:10px;">通用结算信息表格</a>';
+	paymsg+='<a class="btn btn-default btn-block" href="download.php?act=settle&type=alipay&batch='+batch+'" style="margin-top:10px;">支付宝批量付款表格</a>';
 	layer.alert('<center>'+paymsg+'<hr><a class="btn btn-default btn-block" onclick="layer.closeAll()">关闭</a></center>',{
 		btn:[],
 		title:'请选择CSV表格模板',

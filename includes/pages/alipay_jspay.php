@@ -9,6 +9,7 @@ if(!defined('IN_PLUGIN'))exit();
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+	<title>支付宝支付</title>
     <link href="<?php echo $cdnpublic?>ionic/1.3.2/css/ionic.min.css" rel="stylesheet" />
 </head>
 <body>

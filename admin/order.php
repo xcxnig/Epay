@@ -314,32 +314,37 @@ function refund(trade_no) {
 					content: '<p>此操作将从该商户扣除订单分成金额，你需要手动退款给购买者。</p><div class="form-group"><div class="input-group"><div class="input-group-addon">退款金额</div><input type="text" class="form-control" name="refund1" value="'+data.money+'" placeholder="请输入退款金额" autocomplete="off"/></div></div>',
 					yes: function(){
 						var money = $("input[name='refund1']").val();
+						if(money == ''){
+							layer.alert('金额不能为空');return;
+						}
+						var ii = layer.load(2, {shade:[0.1,'#fff']});
 						$.ajax({
 							type : 'POST',
 							url : 'ajax_order.php?act=refund',
 							data : {trade_no:trade_no, money:money},
 							dataType : 'json',
 							success : function(data) {
+								layer.close(ii);
 								if(data.code == 0){
 									layer.alert(data.msg, {icon:1}, function(){ layer.closeAll();searchSubmit(); });
 								}else{
-									layer.alert(data.msg);
+									layer.alert(data.msg, {icon:7});
 								}
 							},
 							error:function(data){
+								layer.close(ii);
 								layer.msg('服务器错误');
-								return false;
 							}
 						});
 					}
 				});
 			}else{
-				layer.alert(data.msg);
+				layer.alert(data.msg, {icon:7});
 			}
 		},
 		error:function(data){
+			layer.close(ii);
 			layer.msg('服务器错误');
-			return false;
 		}
 	});
 }
@@ -356,36 +361,41 @@ function apirefund(trade_no) {
 				layer.open({
 					area: ['360px'],
 					title: 'API退款确认',
-					content: '<p>此操作将直接原路退款该订单，退款操作只能执行一次，退款金额不能大于订单金额。</p><div class="form-group"><div class="input-group"><div class="input-group-addon">退款金额</div><input type="text" class="form-control" name="refund2" value="'+data.money+'" placeholder="请输入退款金额" autocomplete="off"/></div></div><div class="form-group"><div class="input-group"><div class="input-group-addon">支付密码</div><input type="text" class="form-control" name="paypwd" value="" placeholder="请输入支付密码" autocomplete="off"/></div></div>',
+					content: '<p>此操作将直接原路退款该订单，每个订单只能操作一次退款，退款金额不能大于订单金额。</p><div class="form-group"><div class="input-group"><div class="input-group-addon">退款金额</div><input type="text" class="form-control" name="refund2" value="'+data.money+'" placeholder="请输入退款金额" autocomplete="off"/></div></div><div class="form-group"><div class="input-group"><div class="input-group-addon">支付密码</div><input type="text" class="form-control" name="paypwd" value="" placeholder="请输入支付密码" autocomplete="off"/></div></div>',
 					yes: function(){
 						var money = $("input[name='refund2']").val();
 						var paypwd = $("input[name='paypwd']").val();
+						if(money == '' || paypwd == ''){
+							layer.alert('金额或密码不能为空');return;
+						}
+						var ii = layer.load(2, {shade:[0.1,'#fff']});
 						$.ajax({
 							type : 'POST',
 							url : 'ajax_order.php?act=apirefund',
 							data : {trade_no:trade_no, money:money, paypwd:paypwd},
 							dataType : 'json',
 							success : function(data) {
+								layer.close(ii);
 								if(data.code == 0){
 									layer.alert(data.msg, {icon:1}, function(){ layer.closeAll();searchSubmit(); });
 								}else{
-									layer.alert(data.msg);
+									layer.alert(data.msg, {icon:7});
 								}
 							},
 							error:function(data){
+								layer.close(ii);
 								layer.msg('服务器错误');
-								return false;
 							}
 						});
 					}
 				});
 			}else{
-				layer.alert(data.msg);
+				layer.alert(data.msg, {icon:7});
 			}
 		},
 		error:function(data){
+			layer.close(ii);
 			layer.msg('服务器错误');
-			return false;
 		}
 	});
 }

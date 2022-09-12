@@ -29,7 +29,7 @@ class AlipayTradeWapPayContentBuilder
     // 如果该字段为空，则默认为与支付宝签约的商户的PID，也就是appid对应的PID
     private $sellerId;
 
-    // 产品标示码，固定值：QUICK_WAP_PAY
+    // 产品标示码，固定值：QUICK_WAP_WAY
     private $productCode;
 
     private $bizContentarr = array();
@@ -46,7 +46,7 @@ class AlipayTradeWapPayContentBuilder
 
     public function __construct()
     {
-        $this->bizContentarr['productCode'] = "QUICK_WAP_PAY";
+        $this->bizContentarr['productCode'] = "QUICK_WAP_WAY";
     }
 
     public function AlipayTradeWapPayContentBuilder()
